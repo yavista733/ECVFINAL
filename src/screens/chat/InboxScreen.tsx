@@ -1,17 +1,62 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, RefreshControl } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-
-const DEMO_MESSAGES = [
-  { id: 1, name: 'Jennifer Smith', subject: 'Important: All-Hands Meeting Tomorrow', preview: 'Reminder about the company-wide all-hands meeting s...', time: '10m ago', isAnnouncement: true, initials: 'JS', color: '#DC2626' },
-  { id: 2, name: 'Marcus Chen', subject: 'RE: Project Alpha Timeline', preview: 'Thanks for the update. I\'ve reviewed the timeline and h...', time: '1h ago', isAnnouncement: false, initials: '', color: '' },
-  { id: 3, name: 'Emily Roberts', subject: 'Q1 Budget Review', preview: 'Hi team, I\'ve completed the Q1 budget review. Overall ...', time: '3h ago', isAnnouncement: false, initials: 'ER', color: '#DC2626' },
-];
+import { useChatContext } from '../../context/ChatContext';
+import { ConversationWithPreview } from '../../models/Chat';
+import { formatDate } from '../../utils/helpers';
 
 const InboxScreen = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
   const [activeTab, setActiveTab] = useState<'unread' | 'all'>('unread');
+  const { conversations, isLoading, loadConversations } = useChatContext();
+
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await loadConversations();
+    setRefreshing(false);
+  }, [loadConversations]);
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .substring(0, 2)
+      .toUpperCase();
+  };
+
+  const getConversationTitle = (conv: ConversationWithPreview): string => {
+    if (conv.title && conv.title.trim().length > 0) return conv.title;
+    if (conv.participantNames.length > 0) return conv.participantNames[0];
+    return 'Conversación';
+  };
+
+  const renderConversation = (conv: ConversationWithPreview) => {
+    const title = getConversationTitle(conv);
+    return (
+      <Pressable
+        key={conv.id}
+        style={s.messageItem}
+        onPress={() => navigation.navigate('Chat', { conversationId: conv.id, title })}
+      >
+        <View style={s.messageLeft}>
+          <View style={[s.avatar, { backgroundColor: '#7C3AED' }]}>
+            <Text style={s.avatarText}>{getInitials(title)}</Text>
+          </View>
+          <View style={s.messageContent}>
+            <Text style={s.messageName}>{title}</Text>
+            <Text style={s.messagePreview} numberOfLines={1}>
+              {conv.lastMessage || 'Sin mensajes aún'}
+            </Text>
+          </View>
+        </View>
+        <Text style={s.messageTime}>{formatDate(conv.lastMessageTime)}</Text>
+      </Pressable>
+    );
+  };
 
   return (
     <View style={[s.container, { paddingTop: insets.top }]}>
@@ -22,33 +67,31 @@ const InboxScreen = ({ navigation }: any) => {
 
       <View style={s.tabs}>
         <Pressable style={[s.tab, activeTab === 'unread' && s.tabActive]} onPress={() => setActiveTab('unread')}>
-          <Text style={[s.tabText, activeTab === 'unread' && s.tabTextActive]}>Unread (3)</Text>
+          <Text style={[s.tabText, activeTab === 'unread' && s.tabTextActive]}>
+            Unread ({conversations.length})
+          </Text>
         </Pressable>
         <Pressable style={[s.tab, activeTab === 'all' && s.tabActive]} onPress={() => setActiveTab('all')}>
           <Text style={[s.tabText, activeTab === 'all' && s.tabTextActive]}>All</Text>
         </Pressable>
       </View>
 
-      <ScrollView style={s.list}>
-        {DEMO_MESSAGES.map((msg) => (
-          <Pressable key={msg.id} style={s.messageItem} onPress={() => navigation.navigate('Chat', { conversationId: msg.id, title: msg.name })}>
-            <View style={s.messageLeft}>
-              {msg.isAnnouncement ? (
-                <View style={[s.avatar, { backgroundColor: '#7F1D1D' }]}><Ionicons name="megaphone" size={20} color="#F87171" /></View>
-              ) : msg.initials ? (
-                <View style={[s.avatar, { backgroundColor: msg.color || '#374151' }]}><Text style={s.avatarText}>{msg.initials}</Text></View>
-              ) : (
-                <View style={[s.avatar, { backgroundColor: '#374151' }]}><Ionicons name="person" size={20} color="#9CA3AF" /></View>
-              )}
-              <View style={s.messageContent}>
-                <Text style={s.messageName}>{msg.name}</Text>
-                <Text style={s.messageSubject} numberOfLines={1}>{msg.subject}</Text>
-                <Text style={s.messagePreview} numberOfLines={1}>{msg.preview}</Text>
-              </View>
-            </View>
-            <Text style={s.messageTime}>{msg.time}</Text>
-          </Pressable>
-        ))}
+      {isLoading && !refreshing && (
+        <ActivityIndicator color="#7C3AED" style={{ marginTop: 32 }} />
+      )}
+
+      {!isLoading && conversations.length === 0 && (
+        <View style={s.emptyContainer}>
+          <Ionicons name="chatbubbles-outline" size={48} color="#374151" />
+          <Text style={s.emptyText}>No tienes conversaciones aún</Text>
+        </View>
+      )}
+
+      <ScrollView
+        style={s.list}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#7C3AED" />}
+      >
+        {conversations.map(renderConversation)}
         <View style={{ height: 80 }} />
       </ScrollView>
     </View>
@@ -65,15 +108,16 @@ const s = StyleSheet.create({
   tabText: { fontSize: 14, fontWeight: '600', color: '#6B7280' },
   tabTextActive: { color: '#7C3AED' },
   list: { flex: 1, paddingTop: 8 },
-  messageItem: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: 0.5, borderBottomColor: '#1F2937' },
-  messageLeft: { flexDirection: 'row', flex: 1, marginRight: 12 },
+  messageItem: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: 0.5, borderBottomColor: '#1F2937' },
+  messageLeft: { flexDirection: 'row', flex: 1, marginRight: 12, alignItems: 'center' },
   avatar: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
   avatarText: { color: '#fff', fontSize: 16, fontWeight: '700' },
   messageContent: { flex: 1 },
   messageName: { fontSize: 15, fontWeight: '700', color: '#F9FAFB' },
-  messageSubject: { fontSize: 13, fontWeight: '600', color: '#D1D5DB', marginTop: 2 },
   messagePreview: { fontSize: 12, color: '#9CA3AF', marginTop: 2 },
   messageTime: { fontSize: 12, color: '#6B7280' },
+  emptyContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
+  emptyText: { fontSize: 14, color: '#6B7280' },
 });
 
 export default InboxScreen;

@@ -91,7 +91,7 @@ class AuthService {
     await executeAction(
       `INSERT INTO users (email, displayName, department, role, createdAt, updatedAt)
        VALUES (?, ?, ?, ?, ?, ?)`,
-      ['demo@conexioncorp.com', 'Sarah Johnson', 'Product & Innovation', 'Senior Product Manager', now, now],
+      ['demo@conexioncorp.com', 'Jorge Ramirez', 'TI', 'Developer', now, now],
     );
     console.log('✅ Usuario demo creado');
   }
