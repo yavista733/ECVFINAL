@@ -1,37 +1,24 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, Pressable, Image, StyleSheet, RefreshControl } from 'react-native';
+import React from 'react';
+import { View, Text, ScrollView, Pressable, StyleSheet, RefreshControl } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthContext } from '../../context/AuthContext';
+import { usePostContext } from '../../context/PostContext';
 import SyncStatusIndicator from '../../components/Common/SyncStatusIndicator';
+import { formatDate } from '../../utils/helpers';
+import { ReactionType } from '../../models/Post';
 
-const DEMO_POSTS = [
-  {
-    id: 1, userName: 'Sarah Johnson', userRole: 'Senior Product Manager', timeAgo: '2h ago', community: 'General',
-    content: 'Excited to announce our new Q2 product roadmap! We\'ve received incredible feedback from our beta testers and can\'t wait to share what\'s coming next. Big thanks to the entire team for making this happen! 🚀',
-    imageUrl: '', reactions: 24, comments: 8, shares: 3, views: 156, reactedBy: 'Marcus Chen, Emily Roberts',
-  },
-  {
-    id: 2, userName: 'David Martinez', userRole: 'Engineering Lead', timeAgo: '5h ago', community: 'Engineering',
-    content: 'Great team meeting today! Looking forward to collaborating with everyone on the upcoming projects. Let\'s make this quarter amazing! 💪',
-    imageUrl: '', reactions: 12, comments: 4, shares: 1, views: 89, reactedBy: 'Sarah Johnson, David Martinez',
-  },
-  {
-    id: 3, userName: 'Jennifer Smith', userRole: 'HR Director', timeAgo: '1d ago', community: 'Announcements',
-    content: '📢 ANNOUNCEMENT: All-Hands Meeting Tomorrow at 10 AM. We\'ll be discussing Q1 results and our plans for the rest of the year. Please make sure to attend!',
-    imageUrl: '', reactions: 45, comments: 12, shares: 8, views: 312, reactedBy: 'Emily Roberts, Marcus Chen',
-  },
-];
+const REACTION_ICONS: Record<ReactionType, { name: string; color: string }> = {
+  like: { name: 'thumbs-up', color: '#7C3AED' },
+  celebrate: { name: 'sparkles', color: '#F59E0B' },
+  support: { name: 'heart', color: '#EF4444' },
+  insightful: { name: 'bulb', color: '#10B981' },
+};
 
 const FeedScreen = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
   const { user } = useAuthContext();
-  const [refreshing, setRefreshing] = useState(false);
-
-  const onRefresh = async () => {
-    setRefreshing(true);
-    setTimeout(() => setRefreshing(false), 1000);
-  };
+  const { posts, isLoading, loadPosts, toggleReaction } = usePostContext();
 
   const getInitials = (name: string) => name.split(' ').map(p => p[0]).join('').substring(0, 2);
 
@@ -51,32 +38,65 @@ const FeedScreen = ({ navigation }: any) => {
         </View>
       </View>
 
-      <ScrollView style={s.feed} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#7C3AED" />}>
-        {DEMO_POSTS.map((post) => (
+      <ScrollView style={s.feed} refreshControl={<RefreshControl refreshing={isLoading} onRefresh={loadPosts} tintColor="#7C3AED" />}>
+        {posts.length === 0 && !isLoading ? (
+          <View style={s.emptyState}>
+            <Ionicons name="newspaper-outline" size={48} color="#374151" />
+            <Text style={s.emptyTitle}>No hay posts</Text>
+            <Text style={s.emptyText}>Crea el primer post de tu red corporativa</Text>
+          </View>
+        ) : null}
+
+        {posts.map((post) => (
           <View key={post.id} style={s.postCard}>
             <View style={s.postHeader}>
-              <View style={s.postAvatar}><Text style={s.postAvatarText}>{getInitials(post.userName)}</Text></View>
+              <View style={s.postAvatar}><Text style={s.postAvatarText}>{getInitials(post.userDisplayName || 'U')}</Text></View>
               <View style={s.postHeaderText}>
-                <Text style={s.postUserName}>{post.userName}</Text>
-                <Text style={s.postMeta}>{post.timeAgo} · {post.community}</Text>
+                <Text style={s.postUserName}>{post.userDisplayName}</Text>
+                <Text style={s.postMeta}>{formatDate(post.createdAt)} · {post.communityName || 'General'}</Text>
               </View>
               <Pressable><Ionicons name="ellipsis-horizontal" size={20} color="#9CA3AF" /></Pressable>
             </View>
 
             <Text style={s.postContent}>{post.content}</Text>
 
-            <View style={s.reactedRow}>
-              <Text style={s.reactedEmoji}>👍</Text>
-              <Text style={s.reactedText}>{post.reactedBy}</Text>
-            </View>
+            {post.reactionsCount > 0 ? (
+              <View style={s.reactedRow}>
+                <Text style={s.reactedEmoji}>👍</Text>
+                <Text style={s.reactedText}>{post.reactionsCount} reactions</Text>
+              </View>
+            ) : null}
 
             <View style={s.postActions}>
               <View style={s.postActionsLeft}>
-                <Pressable style={s.actionBtn}><Ionicons name="thumbs-up-outline" size={20} color="#9CA3AF" /><Text style={s.actionText}>{post.reactions}</Text></Pressable>
-                <Pressable style={s.actionBtn}><Ionicons name="chatbubble-outline" size={18} color="#9CA3AF" /><Text style={s.actionText}>{post.comments}</Text></Pressable>
-                <Pressable style={s.actionBtn}><Ionicons name="share-social-outline" size={18} color="#9CA3AF" /><Text style={s.actionText}>{post.shares}</Text></Pressable>
+                {(Object.keys(REACTION_ICONS) as ReactionType[]).slice(0, 1).map((rType) => {
+                  const isActive = post.userReaction === rType;
+                  return (
+                    <Pressable key={rType} style={s.actionBtn} onPress={() => toggleReaction(post.id, rType)}>
+                      <Ionicons
+                        name={(isActive ? REACTION_ICONS[rType].name : REACTION_ICONS[rType].name + '-outline') as any}
+                        size={20}
+                        color={isActive ? REACTION_ICONS[rType].color : '#9CA3AF'}
+                      />
+                      <Text style={[s.actionText, isActive && { color: REACTION_ICONS[rType].color }]}>
+                        {post.reactionsCount || ''}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+                <Pressable style={s.actionBtn} onPress={() => navigation.navigate('PostDetail', { postId: post.id })}>
+                  <Ionicons name="chatbubble-outline" size={18} color="#9CA3AF" />
+                  <Text style={s.actionText}>{post.commentsCount || ''}</Text>
+                </Pressable>
+                <Pressable style={s.actionBtn}>
+                  <Ionicons name="share-social-outline" size={18} color="#9CA3AF" />
+                  <Text style={s.actionText}>{post.sharesCount || ''}</Text>
+                </Pressable>
               </View>
-              <View style={s.viewsRow}><Ionicons name="eye-outline" size={16} color="#6B7280" /><Text style={s.viewsText}>{post.views}</Text></View>
+              <View style={s.viewsRow}>
+                <Ionicons name="eye-outline" size={16} color="#6B7280" />
+                <Text style={s.viewsText}>{post.viewsCount}</Text>
+              </View>
             </View>
           </View>
         ))}
@@ -100,6 +120,9 @@ const s = StyleSheet.create({
   avatarText: { color: '#fff', fontSize: 13, fontWeight: '700' },
   headerTitle: { fontSize: 20, fontWeight: '700', color: '#F9FAFB' },
   feed: { flex: 1 },
+  emptyState: { alignItems: 'center', paddingTop: 80 },
+  emptyTitle: { fontSize: 18, fontWeight: '600', color: '#6B7280', marginTop: 16 },
+  emptyText: { fontSize: 13, color: '#4B5563', marginTop: 4 },
   postCard: { backgroundColor: '#1F2937', marginHorizontal: 12, marginTop: 12, borderRadius: 12, padding: 16, borderWidth: 0.5, borderColor: '#374151' },
   postHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
   postAvatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#374151', alignItems: 'center', justifyContent: 'center', marginRight: 12 },

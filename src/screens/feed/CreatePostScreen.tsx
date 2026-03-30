@@ -3,6 +3,8 @@ import { View, Text, TextInput, Pressable, StyleSheet, Alert } from 'react-nativ
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { PostType } from '../../models/Post';
+import { usePostContext } from '../../context/PostContext';
+
 
 const POST_TYPES: { key: PostType; label: string }[] = [
   { key: 'post', label: 'Post' },
@@ -12,17 +14,20 @@ const POST_TYPES: { key: PostType; label: string }[] = [
 
 const CreatePostScreen = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
+  const { createPost } = usePostContext();
   const [content, setContent] = useState('');
   const [type, setType] = useState<PostType>('post');
   const [community, setCommunity] = useState('');
 
-  const handlePublish = () => {
+  const handlePublish = async () => {
     if (!content.trim()) {
       Alert.alert('Error', 'El contenido no puede estar vacio');
       return;
     }
-    Alert.alert('Publicado', 'Tu post ha sido creado exitosamente');
-    navigation.goBack();
+    try {
+      await createPost(content.trim(), type, '', community);
+      navigation.goBack();
+    } catch {}
   };
 
   return (

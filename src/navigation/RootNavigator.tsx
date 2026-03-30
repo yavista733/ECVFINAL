@@ -10,6 +10,7 @@ import LoginScreen from '../screens/auth/LoginScreen';
 import RegisterScreen from '../screens/auth/RegisterScreen';
 import FeedScreen from '../screens/feed/FeedScreen';
 import CreatePostScreen from '../screens/feed/CreatePostScreen';
+import PostDetailScreen from '../screens/feed/PostDetailScreen';
 import InboxScreen from '../screens/chat/InboxScreen';
 import ChatScreen from '../screens/chat/ChatScreen';
 import ProfileScreen from '../screens/profile/ProfileScreen';
@@ -70,6 +71,7 @@ export const RootNavigator = () => {
           <>
             <Stack.Screen name="MainTabs" component={MainTabs} />
             <Stack.Screen name="CreatePost" component={CreatePostScreen} />
+            <Stack.Screen name="PostDetail" component={PostDetailScreen} />
             <Stack.Screen name="Chat" component={ChatScreen} />
             <Stack.Screen name="Settings" component={SettingsScreen} />
           </>
