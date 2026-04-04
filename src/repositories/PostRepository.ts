@@ -82,6 +82,9 @@ class PostRepository {
       if (!newPost) throw new Error('Error al crear post');
 
       const isOnline = await syncService.checkConnectivity();
+      console.log('🌐 isOnline:', isOnline, '| enableSync:', supabaseConfig.enableSync);
+      console.log('🔑 URL:', supabaseConfig.url);
+      console.log('🔑 Key length:', supabaseConfig.anonKey?.length);
       if (isOnline && supabaseConfig.enableSync) {
         this.syncPostAsync(newPost);
       }

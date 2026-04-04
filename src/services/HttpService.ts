@@ -16,7 +16,7 @@ class HttpService {
       'Content-Type': 'application/json',
       apiKey: this.apiKey,
       Authorization: `Bearer ${this.apiKey}`,
-      Prefer: 'return=representation',
+      Prefer: 'return=representation,resolution=merge-duplicates',
     };
   }
 
@@ -48,8 +48,11 @@ class HttpService {
 
       const text = await response.text();
       return text ? JSON.parse(text) : ({} as T);
-    } catch (error) {
-      console.error(`❌ HttpService.${method} ${endpoint}:`, error);
+    } catch (error: any) {
+      const msg = error?.message || '';
+      if (!msg.includes('409')) {
+        console.error(`❌ HttpService.${method} ${endpoint}:`, error);
+      }
       throw error;
     } finally {
       clearTimeout(timeoutId);

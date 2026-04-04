@@ -122,7 +122,7 @@ const PostDetailScreen = ({ route, navigation }: Props) => {
     >
       <View style={[styles.container, { paddingBottom: insets.bottom }]}>
         <View style={styles.topBar}>
-          <Pressable onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Pressable onPress={() => navigation.canGoBack() ? navigation.goBack() : navigation.navigate('MainTabs')} style={styles.backButton}>
             <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
           </Pressable>
           <Text style={styles.topBarTitle}>Post</Text>

@@ -56,7 +56,12 @@ class SyncService {
         return { remoteId: result[0].id };
       }
       return null;
-    } catch (error) {
+    } catch (error: any) {
+      const msg = error?.message || '';
+      if (msg.includes('409')) {
+        console.warn(`⚠️ ${table} ya existe en remoto, ignorando`);
+        return null;
+      }
       console.error(`❌ SyncService.syncSingle(${table}):`, error);
       return null;
     }

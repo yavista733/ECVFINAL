@@ -13,8 +13,8 @@ interface SupabaseConfig {
 }
 
 export const supabaseConfig: SupabaseConfig = {
-  url: getEnvVariable('SUPABASE_URL', ''),
-  anonKey: getEnvVariable('SUPABASE_ANON_KEY', ''),
-  timeout: parseInt(getEnvVariable('API_TIMEOUT', '10000'), 10),
-  enableSync: getEnvVariable('ENABLE_SYNC', 'true') === 'true',
+  url: process.env.EXPO_PUBLIC_SUPABASE_URL || '',
+  anonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '',
+  timeout: parseInt(process.env.EXPO_PUBLIC_API_TIMEOUT || '10000', 10),
+  enableSync: (process.env.EXPO_PUBLIC_ENABLE_SYNC || 'true') === 'true',
 };
