@@ -162,9 +162,9 @@ class PostRepository {
 
       const now = new Date().toISOString();
       const posts = [
-        { content: 'Excited to announce our new Q2 product roadmap! We\'ve received incredible feedback from our beta testers and can\'t wait to share what\'s coming next. Big thanks to the entire team! 🚀', type: 'announcement', community: 'General' },
-        { content: 'Great team meeting today! Looking forward to collaborating with everyone on the upcoming projects. Let\'s make this quarter amazing! 💪', type: 'post', community: 'Engineering' },
-        { content: '📢 ANNOUNCEMENT: All-Hands Meeting Tomorrow at 10 AM. We\'ll be discussing Q1 results and our plans for the rest of the year. Please make sure to attend!', type: 'announcement', community: 'Announcements' },
+        { content: '¡Nos complace anunciar nuestra nueva hoja de ruta de productos para el segundo trimestre! Hemos recibido comentarios increíbles de nuestros beta testers y estamos deseando compartir las próximas novedades. ¡Muchísimas gracias a todo el equipo! 🚀', type: 'anuncio', community: 'General' },
+        { content: '¡Excelente reunión de equipo hoy! Tengo muchas ganas de colaborar con todos en los próximos proyectos. ¡Hagamos que este trimestre sea increíble! 💪', type: 'correo', community: 'Ingeniería' },
+        { content: '📢 ANUNCIO: Reunión general mañana a las 10 AM. Discutiremos los resultados del Q1 y nuestros planes para el resto del año. ¡Por favor, asegúrate de asistir!', type: 'anuncio', community: 'Anuncios' },
       ];
 
       for (const p of posts) {

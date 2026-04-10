@@ -20,7 +20,7 @@ const RegisterScreen = ({ navigation }: RegisterScreenProps) => {
       return;
     }
     if (!email.trim()) {
-      setLocalError('Ingresa tu email');
+      setLocalError('Ingresa tu email @');
       return;
     }
     if (!password || password.length < 6) {

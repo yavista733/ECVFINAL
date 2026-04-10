@@ -166,9 +166,9 @@ class ChatRepository {
       );
 
       const demoMessages = [
-        { senderId: user2Result.id, text: 'Hi! Have you reviewed the project timeline?' },
-        { senderId: currentUserId, text: 'Yes, looks good overall!' },
-        { senderId: user2Result.id, text: 'Great! Can we discuss Q2 milestones tomorrow?' },
+        { senderId: user2Result.id, text: '¡Hola! ¿Has revisado el cronograma del proyecto?' },
+        { senderId: currentUserId, text: 'Sí, ¡tiene buena pinta en general!' },
+        { senderId: user2Result.id, text: '¡Genial! ¿Podemos discutir los hitos del Q2 mañana?' },
       ];
 
       for (const msg of demoMessages) {

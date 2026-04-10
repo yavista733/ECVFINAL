@@ -18,7 +18,7 @@ const LoginScreen = ({ navigation }: LoginScreenProps) => {
       return;
     }
     if (!password || password.length < 6) {
-      setLocalError('La contrasena debe tener al menos 6 caracteres');
+      setLocalError('La contrasena debe tener al menos 6 caracteres y no puede estar vacia');
       return;
     }
     setLocalError('');

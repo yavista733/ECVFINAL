@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet, Alert } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Alert, Switch } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthContext } from '../../context/AuthContext';
@@ -7,18 +7,73 @@ import SyncStatusIndicator from '../../components/Common/SyncStatusIndicator';
 
 const SettingsScreen = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
-  const { logout } = useAuthContext();
+  const { logout, user } = useAuthContext();
 
   const handleLogout = () => {
-    Alert.alert('Cerrar Sesion', 'Estas seguro?', [
+    Alert.alert('Cerrar Sesión', '¿Estás seguro que deseas cerrar sesión?', [
       { text: 'Cancelar', style: 'cancel' },
-      { text: 'Cerrar Sesion', style: 'destructive', onPress: logout },
+      { text: 'Cerrar Sesión', style: 'destructive', onPress: logout },
     ]);
   };
 
-  const MenuItem = ({ icon, label, onPress, color }: { icon: string; label: string; onPress?: () => void; color?: string }) => (
+  const handleAccountSettings = () => {
+    Alert.alert(
+      'Account Settings',
+      `Cuenta activa: ${user?.email || 'N/A'}\nDepartamento: ${user?.department || 'N/A'}\nRol: ${user?.role || 'N/A'}`,
+      [
+        { text: 'Cambiar contraseña', onPress: () => Alert.alert('Info', 'Función disponible próximamente') },
+        { text: 'Cerrar', style: 'cancel' },
+      ],
+    );
+  };
+
+  const handleNotifications = () => {
+    Alert.alert(
+      'Notificaciones',
+      'Configura qué notificaciones deseas recibir',
+      [
+        { text: 'Nuevos comentarios ✅', onPress: () => Alert.alert('Info', 'Notificaciones de comentarios activadas') },
+        { text: 'Nuevas reacciones ✅', onPress: () => Alert.alert('Info', 'Notificaciones de reacciones activadas') },
+        { text: 'Mensajes directos ✅', onPress: () => Alert.alert('Info', 'Notificaciones de mensajes activadas') },
+        { text: 'Cerrar', style: 'cancel' },
+      ],
+    );
+  };
+
+  const handlePrivacy = () => {
+    Alert.alert(
+      'Privacy & Security',
+      'Gestiona tu privacidad y seguridad',
+      [
+        { text: 'Perfil público ✅', onPress: () => Alert.alert('Info', 'Tu perfil es visible para todos') },
+        { text: 'Bloquear usuarios', onPress: () => Alert.alert('Info', 'No tienes usuarios bloqueados') },
+        { text: 'Eliminar cuenta', style: 'destructive', onPress: () => Alert.alert('Info', 'Contacta al administrador') },
+        { text: 'Cerrar', style: 'cancel' },
+      ],
+    );
+  };
+
+  const handleHelp = () => {
+    Alert.alert(
+      'Help & Support',
+      'Centro de ayuda de ConexionCorp',
+      [
+        { text: 'Preguntas frecuentes', onPress: () => Alert.alert('FAQ', 'Visita nuestra documentación en docs.conexioncorp.com') },
+        { text: 'Reportar un problema', onPress: () => Alert.alert('Reporte', 'Tu reporte ha sido enviado. Gracias por ayudarnos a mejorar.') },
+        { text: 'Contactar soporte', onPress: () => Alert.alert('Soporte', 'Escríbenos a soporte@conexioncorp.com') },
+        { text: 'Cerrar', style: 'cancel' },
+      ],
+    );
+  };
+
+  const MenuItem = ({ icon, label, onPress, color }: {
+    icon: string;
+    label: string;
+    onPress?: () => void;
+    color?: string;
+  }) => (
     <Pressable style={s.menuItem} onPress={onPress}>
-      <Ionicons name={icon as any} size={22} color={color || '#E5E7EB'} />
+      <Ionicons name={icon as any} size={22} color={color || '#7C3AED'} />
       <Text style={[s.menuLabel, color ? { color } : null]}>{label}</Text>
       <Ionicons name="chevron-forward" size={18} color="#6B7280" />
     </Pressable>
@@ -27,18 +82,27 @@ const SettingsScreen = ({ navigation }: any) => {
   return (
     <View style={[s.container, { paddingTop: insets.top }]}>
       <View style={s.header}>
-        <Pressable onPress={() => navigation.goBack()} style={s.backBtn}><Ionicons name="arrow-back" size={24} color="#fff" /></Pressable>
+        <Pressable onPress={() => navigation.goBack()} style={s.backBtn}>
+          <Ionicons name="arrow-back" size={24} color="#fff" />
+        </Pressable>
         <Text style={s.headerTitle}>Settings</Text>
         <View style={{ width: 40 }} />
       </View>
 
       <View style={s.content}>
-        <View style={s.syncRow}><SyncStatusIndicator /></View>
+        <View style={s.syncRow}>
+          <SyncStatusIndicator />
+        </View>
 
-        <MenuItem icon="person-outline" label="Account Settings" />
-        <MenuItem icon="notifications-outline" label="Notifications" />
-        <MenuItem icon="lock-closed-outline" label="Privacy & Security" />
-        <MenuItem icon="help-circle-outline" label="Help & Support" />
+        <Text style={s.sectionTitle}>Cuenta</Text>
+        <MenuItem icon="person-outline" label="Account Settings" onPress={handleAccountSettings} />
+        <MenuItem icon="notifications-outline" label="Notifications" onPress={handleNotifications} />
+
+        <Text style={s.sectionTitle}>Seguridad</Text>
+        <MenuItem icon="lock-closed-outline" label="Privacy & Security" onPress={handlePrivacy} />
+
+        <Text style={s.sectionTitle}>Soporte</Text>
+        <MenuItem icon="help-circle-outline" label="Help & Support" onPress={handleHelp} />
 
         <Pressable style={s.logoutBtn} onPress={handleLogout}>
           <Ionicons name="log-out-outline" size={22} color="#F87171" />
@@ -46,7 +110,7 @@ const SettingsScreen = ({ navigation }: any) => {
         </Pressable>
 
         <View style={s.footer}>
-          <Text style={s.footerText}>ConexionCorp v1.0.0</Text>
+          <Text style={s.footerText}>ConexionCorp v1.0.2</Text>
           <Text style={s.footerText}>© 2026 All rights reserved</Text>
         </View>
       </View>
@@ -61,9 +125,10 @@ const s = StyleSheet.create({
   headerTitle: { fontSize: 20, fontWeight: '700', color: '#F9FAFB' },
   content: { paddingHorizontal: 16, paddingTop: 20 },
   syncRow: { alignItems: 'flex-start', marginBottom: 20 },
+  sectionTitle: { fontSize: 12, fontWeight: '700', color: '#6B7280', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8, marginTop: 16, paddingHorizontal: 4 },
   menuItem: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#1F2937', borderRadius: 12, borderWidth: 0.5, borderColor: '#374151', paddingHorizontal: 16, paddingVertical: 16, marginBottom: 10, gap: 14 },
   menuLabel: { flex: 1, fontSize: 15, fontWeight: '500', color: '#E5E7EB' },
-  logoutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#7F1D1D', borderRadius: 12, paddingVertical: 16, marginTop: 20, gap: 10 },
+  logoutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#7F1D1D', borderRadius: 12, paddingVertical: 16, marginTop: 24, gap: 10 },
   logoutText: { fontSize: 16, fontWeight: '700', color: '#F87171' },
   footer: { alignItems: 'center', marginTop: 40 },
   footerText: { fontSize: 12, color: '#6B7280', marginTop: 2 },

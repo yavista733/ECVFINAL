@@ -66,8 +66,8 @@ class CommentRepository {
 
       const now = new Date().toISOString();
       const demos = [
-        'Great update! Looking forward to seeing the roadmap.',
-        'Thanks for sharing, this is really exciting news!',
+        '¡Excelente actualización! Tengo muchas ganas de ver la hoja de ruta.',
+        'Gracias por compartir, ¡son noticias realmente emocionantes!',
       ];
 
       for (const text of demos) {
