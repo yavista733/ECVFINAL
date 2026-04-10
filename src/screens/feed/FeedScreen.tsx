@@ -33,7 +33,9 @@ const FeedScreen = ({ navigation }: any) => {
         </View>
         <View style={s.headerRight}>
           <SyncStatusIndicator />
-          <Pressable style={s.headerIcon}><Ionicons name="search-outline" size={22} color="#E5E7EB" /></Pressable>
+          <Pressable style={s.headerIcon} onPress={() => navigation.navigate('Search')}>
+            <Ionicons name="search-outline" size={22} color="#E5E7EB" />
+          </Pressable>
           <Pressable style={s.headerIcon}><Ionicons name="notifications-outline" size={22} color="#E5E7EB" /></Pressable>
         </View>
       </View>

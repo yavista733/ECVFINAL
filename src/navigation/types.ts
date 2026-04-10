@@ -8,6 +8,7 @@ export type RootStackParamList = {
   PostDetail: { postId: number };
   Chat: { conversationId: number; title: string };
   Settings: undefined;
+  Search: undefined;
 };
 
 export type LoginScreenProps = NativeStackScreenProps<RootStackParamList, 'Login'>;
@@ -16,3 +17,4 @@ export type CreatePostScreenProps = NativeStackScreenProps<RootStackParamList, '
 export type PostDetailScreenProps = NativeStackScreenProps<RootStackParamList, 'PostDetail'>;
 export type ChatScreenProps = NativeStackScreenProps<RootStackParamList, 'Chat'>;
 export type SettingsScreenProps = NativeStackScreenProps<RootStackParamList, 'Settings'>;
+export type SearchScreenProps = NativeStackScreenProps<RootStackParamList, 'Search'>;
